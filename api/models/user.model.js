@@ -1,7 +1,7 @@
-import mongoose from 'mangoose';
+import mongoose from 'mongoose';
 import { timeStamp } from 'node:console';
 
-const userSchema = new mangoose.Schema({
+const userSchema = new mongoose.Schema({
     username: {
         type: String,
         required: true,
