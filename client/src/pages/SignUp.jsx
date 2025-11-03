@@ -19,18 +19,28 @@ export default function SignUp() {
       setLoading(true);
       const res = await fetch('/api/auth/signup', {
         method: 'POST',
+        credentials: 'include',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify(formData),
       });
-      const data = await res.json();
+      const text = await res.text();
+      let data = null;
+      try {
+        data = text ? JSON.parse(text) : null;
+      } catch (parseErr) {
+        console.error('Failed to parse JSON from /api/auth/signup response:', parseErr, text);
+        setLoading(false);
+        setError('Server returned invalid response');
+        return;
+      }
       console.log(data);
-      if (data.success === false) {
+      if (data && data.success === false) {
         setLoading(false);
         setError(data.message);
         return;
-      };
+      }
       setLoading(false);
       setError(null);
       navigate('/sign-in');
@@ -82,4 +92,4 @@ export default function SignUp() {
       {error && <p className='text-red-500 mt-5'>{error}</p>}
     </div>
   );
-};
+}

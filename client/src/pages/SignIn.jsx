@@ -25,14 +25,23 @@ export default function SignIn() {
       dispatch(signInStart());
       const res = await fetch('/api/auth/signin', {
         method: 'POST',
+        credentials: 'include',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify(formData),
       });
-      const data = await res.json();
+      const text = await res.text();
+      let data = null;
+      try {
+        data = text ? JSON.parse(text) : null;
+      } catch (parseErr) {
+        console.error('Failed to parse JSON from /api/auth/signin response:', parseErr, text);
+        dispatch(signInFailure('Server returned invalid response'));
+        return;
+      }
       console.log(data);
-      if (data.success === false) {
+      if (data && data.success === false) {
         dispatch(signInFailure(data.message));
         return;
       }
