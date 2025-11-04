@@ -18,6 +18,8 @@ import Contact from '../components/Contact';
 
 // https://sabe.io/blog/javascript-format-numbers-commas#:~:text=The%20best%20way%20to%20format,format%20the%20number%20with%20commas.
 
+const FALLBACK_IMAGE = 'https://www.homelight.com/blog/wp-content/uploads/2019/05/sell-my-luxury-home.jpg';
+
 export default function Listing() {
   SwiperCore.use([Navigation]);
   const [listing, setListing] = useState(null);
@@ -25,6 +27,7 @@ export default function Listing() {
   const [error, setError] = useState(false);
   const [copied, setCopied] = useState(false);
   const [contact, setContact] = useState(false);
+  const [imageErrors, setImageErrors] = useState({});
   const params = useParams();
   const { currentUser } = useSelector((state) => state.user);
 
@@ -59,17 +62,29 @@ export default function Listing() {
       {listing && !loading && !error && (
         <div>
           <Swiper navigation>
-            {listing.imageUrls.map((url) => (
-              <SwiperSlide key={url}>
+            {Array.isArray(listing.imageUrls) && listing.imageUrls.length > 0 ? (
+              listing.imageUrls.map((url, index) => (
+                <SwiperSlide key={url}>
+                  <div
+                    className='h-[550px]'
+                    style={{
+                      background: `url(${imageErrors[index] ? FALLBACK_IMAGE : url}) center no-repeat`,
+                      backgroundSize: 'cover',
+                    }}
+                    onError={() => setImageErrors(prev => ({ ...prev, [index]: true }))}
+                  ></div>
+                </SwiperSlide>
+              ))
+            ) : (
+              <SwiperSlide key={'fallback'}>
                 <div
-                  className='h-[550px]'
+                  className='h-[550px] bg-cover bg-center'
                   style={{
-                    background: `url(${url}) center no-repeat`,
-                    backgroundSize: 'cover',
+                    backgroundImage: `url('${FALLBACK_IMAGE}')`,
                   }}
-                ></div>
+                />
               </SwiperSlide>
-            ))}
+            )}
           </Swiper>
           <div className='fixed top-[13%] right-[3%] z-10 border rounded-full w-12 h-12 flex justify-center items-center bg-slate-100 cursor-pointer'>
             <FaShare

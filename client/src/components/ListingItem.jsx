@@ -1,16 +1,22 @@
 import { Link } from 'react-router-dom';
 import { MdLocationOn } from 'react-icons/md';
+import { useState } from 'react';
 
 export default function ListingItem({ listing }) {
+  const fallback = 'https://www.homelight.com/blog/wp-content/uploads/2019/05/sell-my-luxury-home.jpg';
+  const [imgError, setImgError] = useState(false);
+
+  const cover = (!imgError && listing && Array.isArray(listing.imageUrls) && listing.imageUrls.length > 0 && listing.imageUrls[0])
+    ? listing.imageUrls[0]
+    : fallback;
+
   return (
     <div className='bg-white shadow-md hover:shadow-lg transition-shadow overflow-hidden rounded-lg w-full sm:w-[330px]'>
       <Link to={`/listing/${listing._id}`}>
         <img
-          src={
-            listing.imageUrls[0] ||
-            'https://53.fs1.hubspotusercontent-na1.net/hub/53/hubfs/Sales_Blog/real-estate-business-compressor.jpg?width=595&height=400&name=real-estate-business-compressor.jpg'
-          }
+          src={cover}
           alt='listing cover'
+          onError={() => setImgError(true)}
           className='h-[320px] sm:h-[220px] w-full object-cover hover:scale-105 transition-scale duration-300'
         />
         <div className='p-3 flex flex-col gap-2 w-full'>
