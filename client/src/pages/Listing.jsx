@@ -65,24 +65,31 @@ export default function Listing() {
             {Array.isArray(listing.imageUrls) && listing.imageUrls.length > 0 ? (
               listing.imageUrls.map((url, index) => (
                 <SwiperSlide key={url}>
-                  <div
-                    className='h-[550px]'
-                    style={{
-                      background: `url(${imageErrors[index] ? FALLBACK_IMAGE : url}) center no-repeat`,
-                      backgroundSize: 'cover',
-                    }}
-                    onError={() => setImageErrors(prev => ({ ...prev, [index]: true }))}
-                  ></div>
+                  <div className='h-[550px] relative'>
+                    <img
+                      src={imageErrors[index] ? FALLBACK_IMAGE : url}
+                      alt={`Listing image ${index + 1}`}
+                      className='w-full h-full object-cover'
+                      onError={(e) => {
+                        setImageErrors(prev => ({ ...prev, [index]: true }));
+                        e.target.src = FALLBACK_IMAGE;
+                      }}
+                      style={{
+                        opacity: imageErrors[index] ? 0.9 : 1
+                      }}
+                    />
+                  </div>
                 </SwiperSlide>
               ))
             ) : (
               <SwiperSlide key={'fallback'}>
-                <div
-                  className='h-[550px] bg-cover bg-center'
-                  style={{
-                    backgroundImage: `url('${FALLBACK_IMAGE}')`,
-                  }}
-                />
+                <div className='h-[550px] relative'>
+                  <img
+                    src={FALLBACK_IMAGE}
+                    alt="Fallback image"
+                    className='w-full h-full object-cover'
+                  />
+                </div>
               </SwiperSlide>
             )}
           </Swiper>
