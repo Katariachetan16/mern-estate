@@ -1,13 +1,6 @@
 import { useSelector } from 'react-redux';
 import { useRef, useState, useEffect } from 'react';
 import {
-  getDownloadURL,
-  getStorage,
-  ref,
-  uploadBytesResumable,
-} from 'firebase/storage';
-import { app } from '../firebase';
-import {
   updateUserStart,
   updateUserSuccess,
   updateUserFailure,
@@ -23,43 +16,58 @@ export default function Profile() {
   const { currentUser, loading, error } = useSelector((state) => state.user);
   const [file, setFile] = useState(undefined);
   const [filePerc, setFilePerc] = useState(0);
-  const [fileUploadError, setFileUploadError] = useState(false);
+  // fileUploadError will hold an error message string when an upload fails, or null when ok
+  const [fileUploadError, setFileUploadError] = useState(null);
   const [formData, setFormData] = useState({});
   const [updateSuccess, setUpdateSuccess] = useState(false);
   const [showListingsError, setShowListingsError] = useState(false);
   const [userListings, setUserListings] = useState([]);
   const dispatch = useDispatch();
 
-  // firebase storage
-  // allow read;
-  // allow write: if
-  // request.resource.size < 2 * 1024 * 1024 &&
-  // request.resource.contentType.matches('image/.*')
+  const MAX_AVATAR_SIZE = 5 * 1024 * 1024; // 5 MB
 
   useEffect(() => {
     if (!file) return;
 
-    const storage = getStorage(app);
-    const fileName = new Date().getTime() + file.name;
-    const storageRef = ref(storage, fileName);
-    const uploadTask = uploadBytesResumable(storageRef, file);
+    const handleImageUpload = async () => {
+      try {
+        const formData = new FormData();
+        formData.append('image', file);
 
-    uploadTask.on(
-      'state_changed',
-      (snapshot) => {
-        const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
-        setFilePerc(Math.round(progress));
-      },
-      () => {
-        setFileUploadError(true);
-      },
-      () => {
-        getDownloadURL(uploadTask.snapshot.ref).then((downloadURL) =>
-          setFormData((prev) => ({ ...prev, avatar: downloadURL }))
-        );
+        const res = await fetch('/api/user/upload', {
+          method: 'POST',
+          credentials: 'include',
+          body: formData,
+        });
+
+        const data = await res.json();
+        if (data.success === false) {
+          // show server-provided message when available
+          setFileUploadError(data.message || 'Upload failed');
+          return;
+        }
+
+        setFormData((prev) => ({ ...prev, avatar: data.url }));
+        setFileUploadError(null);
+      } catch (error) {
+        setFileUploadError(error.message || 'Upload error');
       }
-    );
+    };
+
+    handleImageUpload();
   }, [file]);
+
+  const handleFileChange = (e) => {
+    const f = e.target.files[0];
+    if (!f) return;
+    if (f.size > MAX_AVATAR_SIZE) {
+      setFileUploadError('Selected file is too large. Max size is 5 MB.');
+      setFile(undefined);
+      return;
+    }
+    setFileUploadError(null);
+    setFile(f);
+  };
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.id]: e.target.value });
@@ -160,7 +168,7 @@ export default function Profile() {
       <h1 className='text-3xl font-semibold text-center my-7'>Profile</h1>
       <form onSubmit={handleSubmit} className='flex flex-col gap-4'>
         <input
-          onChange={(e) => setFile(e.target.files[0])}
+          onChange={handleFileChange}
           type='file'
           ref={fileRef}
           hidden
@@ -174,9 +182,7 @@ export default function Profile() {
         />
         <p className='text-sm self-center'>
           {fileUploadError ? (
-            <span className='text-red-700'>
-              Error Image upload (image must be less than 2 mb)
-            </span>
+            <span className='text-red-700'>{fileUploadError}</span>
           ) : filePerc > 0 && filePerc < 100 ? (
             <span className='text-slate-700'>{`Uploading ${filePerc}%`}</span>
           ) : filePerc === 100 ? (
@@ -256,7 +262,13 @@ export default function Profile() {
             >
               <Link to={`/listing/${listing._id}`}>
                 <img
-                  src={listing.imageUrls[0]}
+                  src={
+                    listing.imageUrls && listing.imageUrls[0]
+                      ? (listing.imageUrls[0].startsWith('http')
+                          ? listing.imageUrls[0]
+                          : `${window.location.protocol}//${window.location.hostname}:3003${listing.imageUrls[0]}`)
+                      : ''
+                  }
                   alt='listing cover'
                   className='h-16 w-16 object-contain'
                 />

@@ -20,6 +20,15 @@ import Contact from '../components/Contact';
 
 const FALLBACK_IMAGE = 'https://www.homelight.com/blog/wp-content/uploads/2019/05/sell-my-luxury-home.jpg';
 
+const resolveImageUrl = (url) => {
+  if (!url) return '';
+  if (url.startsWith('http')) return url;
+  if (url.startsWith('/uploads')) {
+    return `${window.location.protocol}//${window.location.hostname}:3003${url}`;
+  }
+  return url;
+};
+
 export default function Listing() {
   SwiperCore.use([Navigation]);
   const [listing, setListing] = useState(null);
@@ -37,6 +46,7 @@ export default function Listing() {
         setLoading(true);
         const res = await fetch(`/api/listing/get/${params.listingId}`);
         const data = await res.json();
+        console.log('Fetched listing.imageUrls:', data.imageUrls);
         if (data.success === false) {
           setError(true);
           setLoading(false);
@@ -62,12 +72,14 @@ export default function Listing() {
       {listing && !loading && !error && (
         <div>
           <Swiper navigation>
-            {Array.isArray(listing.imageUrls) && listing.imageUrls.length > 0 ? (
-              listing.imageUrls.map((url, index) => (
-                <SwiperSlide key={url}>
+              {Array.isArray(listing.imageUrls) && listing.imageUrls.length > 0 ? (
+              listing.imageUrls.map((url, index) => {
+                const resolved = resolveImageUrl(url) || FALLBACK_IMAGE;
+                return (
+                <SwiperSlide key={`slide-${index}`}>
                   <div className='h-[550px] relative'>
                     <img
-                      src={imageErrors[index] ? FALLBACK_IMAGE : url}
+                      src={imageErrors[index] ? FALLBACK_IMAGE : resolved}
                       alt={`Listing image ${index + 1}`}
                       className='w-full h-full object-cover'
                       onError={(e) => {
@@ -80,7 +92,8 @@ export default function Listing() {
                     />
                   </div>
                 </SwiperSlide>
-              ))
+                )
+              })
             ) : (
               <SwiperSlide key={'fallback'}>
                 <div className='h-[550px] relative'>

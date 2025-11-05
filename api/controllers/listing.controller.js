@@ -3,7 +3,10 @@ import { errorHandler } from '../utils/error.js';
 
 export const createListing = async (req, res, next) => {
   try {
+    // Debug: log incoming imageUrls
+    console.log('createListing received imageUrls:', req.body && req.body.imageUrls);
     const listing = await Listing.create(req.body);
+    console.log('Listing created with id:', listing._id, 'imageUrls:', listing.imageUrls);
     return res.status(201).json(listing);
   } catch (error) {
     next(error);

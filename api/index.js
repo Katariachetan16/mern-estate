@@ -5,6 +5,7 @@ import userRouter from './routes/user.route.js';
 import authRouter from './routes/auth.route.js';
 import listingRouter from './routes/listing.route.js';
 import cookieParser from 'cookie-parser';
+import cors from 'cors';
 import path from 'path';
 dotenv.config();
 
@@ -24,6 +25,17 @@ const app = express();
 app.use(express.json());
 
 app.use(cookieParser());
+
+// Serve uploaded files from /uploads
+app.use('/uploads', express.static(path.join(_dirname, 'uploads')));
+
+// Enable CORS so the frontend (running on Vite) can send credentials (cookies)
+app.use(
+    cors({
+        origin: 'http://localhost:5173',
+        credentials: true,
+    })
+);
 
 app.listen(3003, () => {
     console.log('Server is running on port 3003!');

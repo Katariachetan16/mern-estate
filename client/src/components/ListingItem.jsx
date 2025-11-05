@@ -7,13 +7,23 @@ export default function ListingItem({ listing }) {
   const [imgError, setImgError] = useState(false);
   
   const fallback = 'https://53.fs1.hubspotusercontent-na1.net/hub/53/hubfs/Sales_Blog/real-estate-business-compressor.jpg?width=595&height=400&name=real-estate-business-compressor.jpg';
+  const resolveImageUrl = (url) => {
+    if (!url) return '';
+    if (url.startsWith('http')) return url;
+    // if relative (/uploads/...), point to backend dev server
+    if (url.startsWith('/uploads')) {
+      return `${window.location.protocol}//${window.location.hostname}:3003${url}`;
+    }
+    return url;
+  };
   
   useEffect(() => {
-    if (listing && Array.isArray(listing.imageUrls) && listing.imageUrls.length > 0) {
+  if (listing && Array.isArray(listing.imageUrls) && listing.imageUrls.length > 0) {
+      const src = resolveImageUrl(listing.imageUrls[0]) || fallback;
       const img = new Image();
-      img.src = listing.imageUrls[0];
+      img.src = src;
       img.onload = () => {
-        setImgSrc(listing.imageUrls[0]);
+        setImgSrc(src);
         setImgError(false);
       };
       img.onerror = () => {

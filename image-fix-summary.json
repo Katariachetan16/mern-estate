@@ -1,0 +1,114 @@
+{
+  "scanned": 10,
+  "fixed": 8,
+  "fixes": [
+    {
+      "name": "Modern Villa in  Malibu",
+      "broken": [
+        {
+          "index": 3,
+          "old": "https://images.unsplash.com/photo-1505691723518-36a0c5c9b12f?w=1200&auto=format&fit=crop&q=80",
+          "new": "https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?w=1200&auto=format&fit=crop&q=80",
+          "status": 404
+        }
+      ]
+    },
+    {
+      "name": "Quaint Country House in  Oxfordshire",
+      "broken": [
+        {
+          "index": 2,
+          "old": "https://images.unsplash.com/photo-1505691723518-36a0c5c9b12f?w=1200&auto=format&fit=crop&q=80",
+          "new": "https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?w=1200&auto=format&fit=crop&q=80",
+          "status": 404
+        }
+      ]
+    },
+    {
+      "name": "Luxury Harbour Home in  Sydney",
+      "broken": [
+        {
+          "index": 2,
+          "old": "https://images.unsplash.com/photo-1505691723518-36a0c5c9b12f?w=1200&auto=format&fit=crop&q=80",
+          "new": "https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?w=1200&auto=format&fit=crop&q=80",
+          "status": 404
+        }
+      ]
+    },
+    {
+      "name": "Rustic Tuscan Villa in  Florence",
+      "broken": [
+        {
+          "index": 1,
+          "old": "https://images.unsplash.com/photo-1505691723518-36a0c5c9b12f?w=1200&auto=format&fit=crop&q=80",
+          "new": "https://images.unsplash.com/photo-1499951360447-b19be8fe80f5?w=1200&auto=format&fit=crop&q=80",
+          "status": 404
+        }
+      ]
+    },
+    {
+      "name": "Spacious Suburban Home in  Toronto",
+      "broken": [
+        {
+          "index": 2,
+          "old": "https://images.unsplash.com/photo-1505691723518-36a0c5c9b12f?w=1200&auto=format&fit=crop&q=80",
+          "new": "https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?w=1200&auto=format&fit=crop&q=80",
+          "status": 404
+        }
+      ]
+    },
+    {
+      "name": "Classic Spanish Hacienda in  Andalusia",
+      "broken": [
+        {
+          "index": 1,
+          "old": "https://images.unsplash.com/photo-1505691723518-36a0c5c9b12f?w=1200&auto=format&fit=crop&q=80",
+          "new": "https://images.unsplash.com/photo-1475855581690-80accde3ae2c?w=1200&auto=format&fit=crop&q=80",
+          "status": 404
+        }
+      ]
+    },
+    {
+      "name": "Sleek Scandinavian Home in  Oslo",
+      "broken": [
+        {
+          "index": 1,
+          "old": "https://images.unsplash.com/photo-1505691723518-36a0c5c9b12f?w=1200&auto=format&fit=crop&q=80",
+          "new": "https://images.unsplash.com/photo-1475855581690-80accde3ae2c?w=1200&auto=format&fit=crop&q=80",
+          "status": 404
+        }
+      ]
+    },
+    {
+      "name": "Cozy Swiss Alpine Chalet in  Interlaken",
+      "broken": [
+        {
+          "index": 2,
+          "old": "https://images.unsplash.com/photo-1505691723518-36a0c5c9b12f?w=1200&auto=format&fit=crop&q=80",
+          "new": "https://images.unsplash.com/photo-1499951360447-b19be8fe80f5?w=1200&auto=format&fit=crop&q=80",
+          "status": 404
+        }
+      ]
+    }
+  ],
+  "verificationFailures": [
+    {
+      "name": "Classic Spanish Hacienda in  Andalusia",
+      "bad": [
+        {
+          "index": 1,
+          "url": "https://images.unsplash.com/photo-1475855581690-80accde3ae2c?w=1200&auto=format&fit=crop&q=80"
+        }
+      ]
+    },
+    {
+      "name": "Sleek Scandinavian Home in  Oslo",
+      "bad": [
+        {
+          "index": 1,
+          "url": "https://images.unsplash.com/photo-1475855581690-80accde3ae2c?w=1200&auto=format&fit=crop&q=80"
+        }
+      ]
+    }
+  ]
+}

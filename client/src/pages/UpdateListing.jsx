@@ -1,11 +1,4 @@
 import { useEffect, useState } from 'react';
-import {
-  getDownloadURL,
-  getStorage,
-  ref,
-  uploadBytesResumable,
-} from 'firebase/storage';
-import { app } from '../firebase';
 import { useSelector } from 'react-redux';
 import { useNavigate, useParams } from 'react-router-dom';
 
@@ -30,8 +23,17 @@ export default function UpdateListing() {
   });
   const [imageUploadError, setImageUploadError] = useState(false);
   const [uploading, setUploading] = useState(false);
+  const MAX_LISTING_IMAGE_SIZE = 6 * 1024 * 1024; // 6 MB
   const [error, setError] = useState(false);
   const [loading, setLoading] = useState(false);
+  const resolveImageUrl = (url) => {
+    if (!url) return '';
+    if (url.startsWith('http')) return url;
+    if (url.startsWith('/uploads')) {
+      return `${window.location.protocol}//${window.location.hostname}:3003${url}`;
+    }
+    return url;
+  };
 
   useEffect(() => {
     const fetchListing = async () => {
@@ -48,29 +50,32 @@ export default function UpdateListing() {
     fetchListing();
   }, [params.listingId]);
 
-  const handleImageSubmit = () => {
+  const handleImageSubmit = async () => {
     if (files.length > 0 && files.length + formData.imageUrls.length < 7) {
       setUploading(true);
       setImageUploadError(false);
       const promises = [];
 
       for (let i = 0; i < files.length; i++) {
+        if (files[i].size > MAX_LISTING_IMAGE_SIZE) {
+          throw new Error('One or more images exceed the 6 MB size limit');
+        }
         promises.push(storeImage(files[i]));
       }
-      Promise.all(promises)
-        .then((urls) => {
-          setFormData({
-            ...formData,
-            imageUrls: formData.imageUrls.concat(urls),
-          });
-          setImageUploadError(false);
-          setUploading(false);
-        })
-        .catch((err) => {
-          console.log(err);
-          setImageUploadError('Image upload failed (2 mb max per image)');
-          setUploading(false);
+
+      try {
+        const urls = await Promise.all(promises);
+        console.log('Uploaded image URLs (update):', urls);
+        setFormData({
+          ...formData,
+          imageUrls: formData.imageUrls.concat(urls),
         });
+        setImageUploadError(false);
+      } catch (err) {
+        console.log(err);
+        setImageUploadError(err.message || 'Image upload failed (6 mb max per image)');
+      }
+      setUploading(false);
     } else {
       setImageUploadError('You can only upload 6 images per listing');
       setUploading(false);
@@ -78,28 +83,32 @@ export default function UpdateListing() {
   };
 
   const storeImage = async (file) => {
-    return new Promise((resolve, reject) => {
-      const storage = getStorage(app);
-      const fileName = new Date().getTime() + file.name;
-      const storageRef = ref(storage, fileName);
-      const uploadTask = uploadBytesResumable(storageRef, file);
-      uploadTask.on(
-        'state_changed',
-        (snapshot) => {
-          const progress =
-            (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
-          console.log(`Upload is ${progress}% done`);
-        },
-        (error) => {
-          reject(error);
-        },
-        () => {
-          getDownloadURL(uploadTask.snapshot.ref).then((downloadURL) => {
-            resolve(downloadURL);
-          });
-        }
-      );
-    });
+    try {
+      const formData = new FormData();
+      formData.append('image', file);
+      
+      const res = await fetch('/api/listing/upload', {
+        method: 'POST',
+        credentials: 'include',
+        body: formData,
+      });
+
+      // handle unauthorized explicitly
+      if (res.status === 401 || res.status === 403) {
+        navigate('/sign-in');
+        const errBody = await res.json().catch(() => null);
+        throw new Error((errBody && errBody.message) || 'Unauthorized. Please sign in.');
+      }
+
+      const data = await res.json();
+      if (data.success === false) {
+        throw new Error(data.message);
+      }
+
+      return data.url;
+    } catch (error) {
+      throw error;
+    }
   };
 
   const handleRemoveImage = (index) => {
@@ -354,15 +363,18 @@ export default function UpdateListing() {
             {imageUploadError && imageUploadError}
           </p>
           {formData.imageUrls.length > 0 &&
-            formData.imageUrls.map((url, index) => (
+            formData.imageUrls.map((url, index) => {
+              const resolved = resolveImageUrl(url) || 'https://53.fs1.hubspotusercontent-na1.net/hub/53/hubfs/Sales_Blog/real-estate-business-compressor.jpg?width=595&height=400&name=real-estate-business-compressor.jpg';
+              return (
               <div
-                key={url}
+                key={`preview-${index}`}
                 className='flex justify-between p-3 border items-center'
               >
                 <img
-                  src={url}
+                  src={resolved}
                   alt='listing image'
                   className='w-20 h-20 object-contain rounded-lg'
+                  onError={(e) => { e.target.src = 'https://53.fs1.hubspotusercontent-na1.net/hub/53/hubfs/Sales_Blog/real-estate-business-compressor.jpg?width=595&height=400&name=real-estate-business-compressor.jpg' }}
                 />
                 <button
                   type='button'
@@ -372,7 +384,8 @@ export default function UpdateListing() {
                   Delete
                 </button>
               </div>
-            ))}
+              )
+            })}
           <button
             disabled={loading || uploading}
             className='p-3 bg-slate-700 text-white rounded-lg uppercase hover:opacity-95 disabled:opacity-80'
